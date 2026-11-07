@@ -1,0 +1,42 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --brand-primary: #006699;
+    --brand-primary-dark: #004B70;
+    --brand-primary-light: #E6F2F7;
+    --brand-bg: #F7F9FA;
+    --brand-surface: #FFFFFF;
+    --brand-text-primary: #172B36;
+    --brand-text-secondary: #71808A;
+    --brand-border: #E6EAED;
+    --brand-success: #21865B;
+    --brand-warning: #D99A2B;
+    --brand-error: #D94B4B;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #F7F9FA;
+    color: #172B36;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom scrollbar styling for mobile feel */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

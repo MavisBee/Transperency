@@ -1,0 +1,6 @@
+{
+  "name": "Transparency Hub Mobile Admin",
+  "description": "Executive mobile administration application for Transparency Hub Alumni Network - chapter management, member approvals, dues collection, events, and records.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
