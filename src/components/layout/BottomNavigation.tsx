@@ -1,19 +1,20 @@
-import React from 'react';
 import {
   LayoutGrid,
   ShieldCheck,
   Calendar,
-  Folder,
+  Video,
   MoreHorizontal
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export const BottomNavigation: React.FC = () => {
-  const { activeTab, setActiveTab, setActiveSubScreen, applications } = useApp();
+  const { activeTab, setActiveTab, setActiveSubScreen, applications, meetings } = useApp();
 
   const pendingApprovalsCount = applications.filter(
     a => a.status === 'pending' || a.status === 'awaiting_payment'
   ).length;
+
+  const liveMeetingsCount = meetings.filter(m => m.status === 'live').length;
 
   const navItems = [
     {
@@ -35,10 +36,10 @@ export const BottomNavigation: React.FC = () => {
       badge: 0
     },
     {
-      id: 'drive' as const,
-      label: 'Drive',
-      icon: Folder,
-      badge: 0
+      id: 'meet' as const,
+      label: 'Meet',
+      icon: Video,
+      badge: liveMeetingsCount
     },
     {
       id: 'more' as const,

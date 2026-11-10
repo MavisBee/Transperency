@@ -72,6 +72,15 @@ export interface MemberApplication {
   outstandingBalance: number;
   paymentReference?: string;
   paymentDate?: string;
+  paymentMethod?: string;
+  receiptUrl?: string;
+  receiptThumbnail?: string;
+  receiptApp?: 'Zelle' | 'Bank Wire' | 'Stripe' | 'PayPal' | 'Remita' | 'CashApp' | 'Paystack' | 'Other App';
+  receiptReference?: string;
+  receiptDate?: string;
+  receiptPayerName?: string;
+  receiptVerified?: boolean;
+  isNewMember?: boolean;
   graduationYear: number;
   degree: string;
   responses: {
@@ -251,8 +260,40 @@ export interface RegisteredMember {
   subChapterName?: string;
   status: 'active' | 'pending_renewal' | 'lapsed';
   duesStatus: 'up_to_date' | 'overdue' | 'exempt';
+  duesAmount?: number;
+  duesCycle?: string;
+  duesApprovedByAdmin?: boolean;
+  duesApprovalDate?: string;
+  duesPaymentMethod?: string;
+  duesReference?: string;
   joinedDate: string;
   graduationYear: number;
+}
+
+export interface MeetingItem {
+  id: string;
+  title: string;
+  type: 'Executive Board' | 'General Assembly' | 'Sub-Chapter Sync' | 'Committee' | 'Mentorship Circle';
+  dateDisplay: string;
+  timeDisplay: string;
+  timestamp: string;
+  duration: string;
+  status: 'live' | 'upcoming' | 'concluded';
+  platform: 'Built-in Meet' | 'Google Meet' | 'Zoom' | 'Hybrid Room';
+  meetingUrl: string;
+  roomCode: string;
+  hostName: string;
+  hostAvatar?: string;
+  chapterId: string;
+  chapterName: string;
+  subChapterName?: string;
+  targetAudience: string;
+  attendeesCount: number;
+  maxAttendees?: number;
+  agenda: string[];
+  notes?: string;
+  recordingUrl?: string;
+  hasMinutes?: boolean;
 }
 
 export interface SubscriptionRecord {
@@ -291,7 +332,7 @@ export interface GlobalSearchResult {
   subtitle: string;
   type: 'member' | 'applicant' | 'event' | 'document' | 'minutes';
   badge?: string;
-  targetTab: 'home' | 'approvals' | 'events' | 'drive' | 'more';
+  targetTab: 'home' | 'approvals' | 'events' | 'meet' | 'drive' | 'more';
   targetId?: string;
 }
 
@@ -300,5 +341,8 @@ export type SubScreenType =
   | 'members_directory'
   | 'subscriptions_manager'
   | 'dues_ledger'
-  | 'billing_manager';
+  | 'billing_manager'
+  | 'verify_new_members'
+  | 'existing_dues_approvals'
+  | 'create_meeting';
 

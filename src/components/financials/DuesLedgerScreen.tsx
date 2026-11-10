@@ -23,53 +23,25 @@ export const DuesLedgerScreen: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState('All');
 
   return (
-    <div className="space-y-4 pb-24 animate-in fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setActiveSubScreen(null)}
-            className="w-8 h-8 rounded-full bg-white border border-[#E6EAED] flex items-center justify-center text-[#71808A] hover:text-[#172B36] shadow-xs active:scale-95"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-[#172B36]">
-              Chapter Dues Collection
-            </h1>
-            <p className="text-xs text-[#71808A]">
-              Treasury reconciliation & receipts in {activeChapter.currency}
-            </p>
-          </div>
-        </div>
-      </div>
-
+    <div className="space-y-4 pb-24 pt-1 animate-in fade-in">
       {/* Main Dues Card */}
-      <div className="bg-white rounded-2xl p-4 border border-[#E6EAED] shadow-xs space-y-3">
+
+      {/* Main Dues Card (Target-Free as requested) */}
+      <div className="bg-white rounded-2xl p-4 border border-[#E6EAED] shadow-xs space-y-2">
         <div className="flex items-start justify-between">
           <div>
-            <span className="text-xs font-semibold text-[#71808A]">Total Dues Collected</span>
+            <span className="text-xs font-semibold text-[#71808A]">Total Dues Collected (Fiscal YTD)</span>
             <h2 className="text-2xl font-bold text-[#21865B] font-mono mt-0.5">
               {currentMetrics.duesCollectedFormatted}
             </h2>
+            <p className="text-xs text-[#71808A] mt-1">
+              Confirmed treasury deposits across all {activeChapter.name} sub-chapters
+            </p>
           </div>
-          <span className="px-2.5 py-1 rounded-full bg-[#21865B]/10 text-[#21865B] text-xs font-bold">
-            {currentMetrics.duesPercent}% of Target
+          <span className="px-2.5 py-1 rounded-full bg-[#21865B]/10 text-[#21865B] text-xs font-bold flex items-center gap-1">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            Verified Receipts
           </span>
-        </div>
-
-        {/* Progress bar */}
-        <div className="space-y-1">
-          <div className="w-full bg-[#E6EAED] h-2 rounded-full overflow-hidden">
-            <div
-              className="bg-[#006699] h-full rounded-full transition-all duration-500"
-              style={{ width: `${currentMetrics.duesPercent}%` }}
-            />
-          </div>
-          <div className="flex justify-between text-[11px] text-[#71808A]">
-            <span>Collected: {currentMetrics.duesCollectedFormatted}</span>
-            <span>Target: {currentMetrics.totalBillingFormatted}</span>
-          </div>
         </div>
       </div>
 

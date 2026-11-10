@@ -11,6 +11,7 @@ import { BottomNavigation } from './components/layout/BottomNavigation';
 import { DashboardTab } from './components/dashboard/DashboardTab';
 import { ApprovalsTab } from './components/approvals/ApprovalsTab';
 import { EventsTab } from './components/events/EventsTab';
+import { MeetTab } from './components/meet/MeetTab';
 import { DriveTab } from './components/drive/DriveTab';
 import { MoreTab } from './components/more/MoreTab';
 import { MembersDirectoryScreen } from './components/members/MembersDirectoryScreen';
@@ -44,6 +45,7 @@ const MainScreen: React.FC = () => {
             {activeTab === 'home' && <DashboardTab />}
             {activeTab === 'approvals' && <ApprovalsTab />}
             {activeTab === 'events' && <EventsTab />}
+            {activeTab === 'meet' && <MeetTab />}
             {activeTab === 'drive' && <DriveTab />}
             {activeTab === 'more' && <MoreTab />}
           </>

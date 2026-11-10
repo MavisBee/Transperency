@@ -46,26 +46,8 @@ export const SubscriptionsManagerScreen: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 pb-24 animate-in fade-in">
-      {/* Top Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setActiveSubScreen(null)}
-            className="w-8 h-8 rounded-full bg-white border border-[#E6EAED] flex items-center justify-center text-[#71808A] hover:text-[#172B36] shadow-xs active:scale-95"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-[#172B36]">
-              Subscriptions Management
-            </h1>
-            <p className="text-xs text-[#71808A]">
-              Member tiers & automated renewal schedules for {activeChapter.name}
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-4 pb-24 pt-1 animate-in fade-in">
+      {/* KPI Cards */}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-3 gap-2 text-xs">

@@ -16,8 +16,11 @@
     --brand-error: #D94B4B;
   }
 
+  *, body, button, input, select, textarea, .font-mono, code, pre {
+    font-family: 'Figtree', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  }
+
   body {
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: #F7F9FA;
     color: #172B36;
     -webkit-font-smoothing: antialiased;

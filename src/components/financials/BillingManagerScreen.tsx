@@ -54,32 +54,19 @@ export const BillingManagerScreen: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 pb-24 animate-in fade-in">
-      {/* Top Header */}
+    <div className="space-y-4 pb-24 pt-1 animate-in fade-in">
+      {/* Top Action Bar */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setActiveSubScreen(null)}
-            className="w-8 h-8 rounded-full bg-white border border-[#E6EAED] flex items-center justify-center text-[#71808A] hover:text-[#172B36] shadow-xs active:scale-95"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-[#172B36]">
-              Billing & Invoices
-            </h1>
-            <p className="text-xs text-[#71808A]">
-              Chapter receivables and billing accounts ({activeChapter.currency})
-            </p>
-          </div>
-        </div>
+        <span className="text-xs font-semibold text-[#71808A]">
+          {filteredInvoices.length} invoices on file
+        </span>
 
         <button
           onClick={() => setIsNewInvoiceModalOpen(true)}
-          className="px-3 py-1.5 bg-[#006699] text-white rounded-xl text-xs font-semibold flex items-center gap-1 shadow-xs"
+          className="px-3 py-1.5 bg-[#006699] hover:bg-[#004B70] text-white rounded-xl text-xs font-semibold flex items-center gap-1 shadow-xs transition-all active:scale-95"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span>Invoice</span>
+          <span>New Invoice</span>
         </button>
       </div>
 

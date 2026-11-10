@@ -23,17 +23,19 @@ export const GlobalSearchModal: React.FC = () => {
     registeredMembers,
     applications,
     events,
+    meetings,
     driveFiles,
     minutes,
     setActiveTab,
     setActiveSubScreen,
     setSelectedApplicationId,
     setSelectedEventId,
+    setSelectedMeetingId,
     setSelectedFileId,
     setSelectedMemberId
   } = useApp();
 
-  const [activeCategory, setActiveCategory] = useState<'all' | 'members' | 'events' | 'documents'>('all');
+  const [activeCategory, setActiveCategory] = useState<'all' | 'members' | 'events' | 'meetings' | 'documents'>('all');
 
   // Search indexing across current active chapter
   const searchResults = useMemo<GlobalSearchResult[]>(() => {
@@ -108,7 +110,29 @@ export const GlobalSearchModal: React.FC = () => {
         });
     }
 
-    // 3. Documents & Minutes
+    // 3. Chapter Meetings
+    if (activeCategory === 'all' || activeCategory === 'meetings' || activeCategory === 'events') {
+      meetings
+        .filter(m => activeChapter.id === 'org-wide' || m.chapterId === activeChapter.id)
+        .filter(m =>
+          m.title.toLowerCase().includes(q) ||
+          m.type.toLowerCase().includes(q) ||
+          m.roomCode.toLowerCase().includes(q)
+        )
+        .forEach(m => {
+          results.push({
+            id: m.id,
+            title: m.title,
+            subtitle: `${m.dateDisplay} • ${m.type} • Room #${m.roomCode}`,
+            type: 'event',
+            badge: m.status === 'live' ? 'LIVE NOW' : 'Meet',
+            targetTab: 'meet',
+            targetId: m.id
+          });
+        });
+    }
+
+    // 4. Documents & Minutes
     if (activeCategory === 'all' || activeCategory === 'documents') {
       driveFiles
         .filter(d => activeChapter.id === 'org-wide' || d.chapterId === activeChapter.id)
@@ -150,7 +174,7 @@ export const GlobalSearchModal: React.FC = () => {
     }
 
     return results;
-  }, [globalSearchQuery, activeCategory, activeChapter, registeredMembers, applications, events, driveFiles, minutes]);
+  }, [globalSearchQuery, activeCategory, activeChapter, registeredMembers, applications, events, meetings, driveFiles, minutes]);
 
   if (!isGlobalSearchOpen) return null;
 
@@ -164,6 +188,9 @@ export const GlobalSearchModal: React.FC = () => {
     } else if (item.type === 'applicant') {
       setActiveTab('approvals');
       setSelectedApplicationId(item.targetId || null);
+    } else if (item.targetTab === 'meet') {
+      setActiveTab('meet');
+      setSelectedMeetingId(item.targetId || null);
     } else if (item.type === 'event') {
       setActiveTab('events');
       setSelectedEventId(item.targetId || null);

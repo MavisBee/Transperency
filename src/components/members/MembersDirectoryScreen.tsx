@@ -24,7 +24,8 @@ export const MembersDirectoryScreen: React.FC = () => {
     currentMetrics,
     setActiveSubScreen,
     selectedMemberId,
-    setSelectedMemberId
+    setSelectedMemberId,
+    approveExistingMemberDues
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,26 +53,8 @@ export const MembersDirectoryScreen: React.FC = () => {
   const activeMember = registeredMembers.find(m => m.id === selectedMemberId);
 
   return (
-    <div className="space-y-4 pb-24 animate-in fade-in">
-      {/* Top Navigation Bar with Back Button */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setActiveSubScreen(null)}
-            className="w-8 h-8 rounded-full bg-white border border-[#E6EAED] flex items-center justify-center text-[#71808A] hover:text-[#172B36] shadow-xs active:scale-95"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-[#172B36]">
-              Chapter Members Directory
-            </h1>
-            <p className="text-xs text-[#71808A]">
-              {currentMetrics.totalMembers.toLocaleString()} members in {activeChapter.name} ({currentMetrics.memberGrowth} this period)
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-4 pb-24 pt-1 animate-in fade-in">
+      {/* KPI Overview Summary Strip */}
 
       {/* KPI Overview Summary Strip */}
       <div className="grid grid-cols-3 gap-2 text-xs">
@@ -256,13 +239,41 @@ export const MembersDirectoryScreen: React.FC = () => {
                   <span className="text-[#71808A]">Enrolled Since</span>
                   <span className="font-bold text-[#172B36]">{activeMember.joinedDate}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-[#71808A]">Dues Status</span>
                   <span className={`font-bold ${activeMember.duesStatus === 'up_to_date' ? 'text-[#21865B]' : 'text-[#D94B4B]'}`}>
-                    {activeMember.duesStatus === 'up_to_date' ? 'Up to date' : 'Overdue ($150)'}
+                    {activeMember.duesStatus === 'up_to_date' ? 'Up to date' : `Overdue ($${activeMember.duesAmount || 150})`}
                   </span>
                 </div>
+                {activeMember.duesApprovedByAdmin && (
+                  <div className="flex justify-between items-center text-[11px] pt-1 border-t border-[#E6EAED]/60 text-emerald-700">
+                    <span>Approved by Admin</span>
+                    <span className="font-semibold">{activeMember.duesPaymentMethod || 'Treasury Cleared'}</span>
+                  </div>
+                )}
               </div>
+
+              {activeMember.duesStatus !== 'up_to_date' && (
+                <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 space-y-2">
+                  <div className="flex items-center gap-1.5 text-emerald-800 font-bold">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span>Direct Admin Dues Clearance</span>
+                  </div>
+                  <p className="text-[11px] text-emerald-950/80">
+                    Existing members do not need to upload a receipt. Admin can directly approve annual dues.
+                  </p>
+                  <button
+                    onClick={() => {
+                      approveExistingMemberDues(activeMember.id, 'Chapter Treasury Direct Clearance');
+                      setSelectedMemberId(null);
+                    }}
+                    className="w-full py-2 bg-[#21865B] hover:bg-[#1a6b49] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Approve Dues for {activeMember.fullName} (No Receipt Needed)</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="p-3 border-t border-[#E6EAED] bg-[#F7F9FA] flex justify-end">

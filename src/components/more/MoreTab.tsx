@@ -156,18 +156,9 @@ export const MoreTab: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-24">
-      {/* Header */}
-      {activeSection === 'menu' ? (
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-[#172B36]">
-            Administrative Hub
-          </h1>
-          <p className="text-xs text-[#71808A] font-medium">
-            Executive tools, broadcasts, governance, and audit records
-          </p>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2">
+      {/* Back button when inside sub-section */}
+      {activeSection !== 'menu' && (
+        <div className="flex items-center gap-2 pt-1 pb-1">
           <button
             onClick={() => setActiveSection('menu')}
             className="w-8 h-8 rounded-full bg-white border border-[#E6EAED] flex items-center justify-center text-[#71808A] hover:text-[#172B36] transition-colors shadow-xs"
@@ -175,9 +166,9 @@ export const MoreTab: React.FC = () => {
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h1 className="text-lg font-bold tracking-tight text-[#172B36] capitalize">
+            <h2 className="text-base font-bold tracking-tight text-[#172B36] capitalize">
               {activeSection.replace('_', ' ')}
-            </h1>
+            </h2>
             <p className="text-[11px] text-[#71808A] font-medium">
               Transparency Hub • {activeChapter.name}
             </p>

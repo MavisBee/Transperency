@@ -65,26 +65,28 @@ export const DashboardTab: React.FC = () => {
             </div>
           </button>
 
-          {/* Card 2: Active Subscriptions */}
+          {/* Card 2: Pending Renewals (Replaced Active Subscriptions as requested) */}
           <button
             onClick={() => setActiveSubScreen('subscriptions_manager')}
             className="text-left bg-white rounded-2xl p-4 border border-[#E6EAED] shadow-xs hover:border-[#006699]/40 transition-all group active:scale-98"
           >
             <div className="flex items-start justify-between">
               <span className="text-2xl font-bold tracking-tight text-[#172B36] font-mono tabular-nums">
-                {currentMetrics.activeSubscriptions.toLocaleString()}
+                {currentMetrics.pendingRenewals}
               </span>
               <ArrowUpRight className="w-4 h-4 text-[#71808A] group-hover:text-[#006699] transition-colors" />
             </div>
             <p className="text-xs text-[#71808A] font-medium mt-3">
-              Active Subscriptions
+              Pending Renewals
             </p>
-            <p className="text-[11px] text-[#71808A] font-medium mt-1">
-              {currentMetrics.pendingRenewals} Pending
-            </p>
+            <div className="mt-1">
+              <span className="inline-block px-2 py-0.5 rounded-full bg-amber-50 text-[#D99A2B] text-[11px] font-semibold">
+                Awaiting dues review
+              </span>
+            </div>
           </button>
 
-          {/* Card 3: Dues Collected */}
+          {/* Card 3: Dues Collected (Target removed as requested: no target is set for dues) */}
           <button
             onClick={() => setActiveSubScreen('dues_ledger')}
             className="text-left bg-white rounded-2xl p-4 border border-[#E6EAED] shadow-xs hover:border-[#006699]/40 transition-all group active:scale-98"
@@ -98,14 +100,9 @@ export const DashboardTab: React.FC = () => {
             <p className="text-xs text-[#71808A] font-medium mt-3">
               Dues Collected
             </p>
-            <div className="w-full bg-[#E6EAED] h-1.5 rounded-full mt-2 overflow-hidden">
-              <div
-                className="bg-[#006699] h-full rounded-full transition-all duration-500"
-                style={{ width: `${currentMetrics.duesPercent}%` }}
-              />
-            </div>
-            <p className="text-[10px] text-[#71808A] font-medium mt-1">
-              {currentMetrics.duesPercent}% of {currentMetrics.totalBillingFormatted} target
+            <p className="text-[11px] text-[#21865B] font-semibold mt-1 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#21865B]" />
+              Confirmed chapter dues
             </p>
           </button>
 
@@ -347,7 +344,13 @@ export const DashboardTab: React.FC = () => {
           </button>
         </div>
 
-        <div className="bg-white rounded-2xl border border-[#E6EAED] shadow-xs overflow-hidden">
+        <div
+          onClick={() => {
+            setSelectedEventId(nextEvent.id);
+            setActiveTab('events');
+          }}
+          className="bg-white rounded-2xl border border-[#E6EAED] shadow-xs overflow-hidden cursor-pointer hover:border-[#006699]/40 transition-all group active:scale-99"
+        >
           {/* Event Cover Image Banner */}
           <div className="relative h-44 w-full bg-slate-900 overflow-hidden">
             <img

@@ -87,24 +87,19 @@ export const DriveTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 pb-24">
-      {/* Header */}
+    <div className="space-y-4 pb-24 pt-1">
+      {/* Top Action Bar */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-[#172B36]">
-            Transparency Hub Drive
-          </h1>
-          <p className="text-xs text-[#71808A] font-medium">
-            Centralized document vault & official records repository
-          </p>
-        </div>
+        <span className="text-xs font-semibold text-[#71808A]">
+          {filteredFiles.length} documents archived
+        </span>
 
         <button
           onClick={() => setIsUploadModalOpen(true)}
-          className="px-3 py-2 bg-[#006699] hover:bg-[#004B70] text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all active:scale-95"
+          className="px-3 py-1.5 bg-[#006699] hover:bg-[#004B70] text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all active:scale-95"
         >
-          <Upload className="w-4 h-4" />
-          <span>Upload</span>
+          <Upload className="w-3.5 h-3.5" />
+          <span>Upload Document</span>
         </button>
       </div>
 

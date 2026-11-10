@@ -16,7 +16,8 @@ import {
   RegisteredMember,
   SubscriptionRecord,
   InvoiceRecord,
-  SubScreenType
+  SubScreenType,
+  MeetingItem
 } from '../types';
 import {
   INITIAL_CHAPTERS,
@@ -33,7 +34,8 @@ import {
   INITIAL_AUDIT_LOGS,
   INITIAL_MEMBERS,
   INITIAL_SUBSCRIPTIONS,
-  INITIAL_INVOICES
+  INITIAL_INVOICES,
+  INITIAL_MEETINGS
 } from '../data/mockData';
 
 interface AppContextType {
@@ -46,6 +48,7 @@ interface AppContextType {
   subscriptions: SubscriptionRecord[];
   invoices: InvoiceRecord[];
   events: EventItem[];
+  meetings: MeetingItem[];
   activities: ActivityItem[];
   announcements: AnnouncementItem[];
   minutes: MeetingMinutesItem[];
@@ -56,11 +59,13 @@ interface AppContextType {
   unreadNotifCount: number;
   auditLogs: AuditLogEntry[];
   userRole: Role;
-  activeTab: 'home' | 'approvals' | 'events' | 'drive' | 'more';
+  activeTab: 'home' | 'approvals' | 'events' | 'meet' | 'more' | 'drive';
   activeSubScreen: SubScreenType;
   isMobileFrameEnabled: boolean;
   selectedApplicationId: string | null;
   selectedEventId: string | null;
+  selectedMeetingId: string | null;
+  liveMeetingRoomId: string | null;
   selectedFileId: string | null;
   selectedMemberId: string | null;
   isChapterSelectorOpen: boolean;
@@ -69,13 +74,15 @@ interface AppContextType {
   globalSearchQuery: string;
   activeQuickAction: 'create_event' | 'make_announcement' | 'upload_minutes' | 'view_approvals' | null;
 
-  setActiveTab: (tab: 'home' | 'approvals' | 'events' | 'drive' | 'more') => void;
+  setActiveTab: (tab: 'home' | 'approvals' | 'events' | 'meet' | 'more' | 'drive') => void;
   setActiveSubScreen: (sub: SubScreenType) => void;
   setActiveChapterId: (id: string) => void;
   setUserRole: (role: Role) => void;
   setIsMobileFrameEnabled: (val: boolean) => void;
   setSelectedApplicationId: (id: string | null) => void;
   setSelectedEventId: (id: string | null) => void;
+  setSelectedMeetingId: (id: string | null) => void;
+  setLiveMeetingRoomId: (id: string | null) => void;
   setSelectedFileId: (id: string | null) => void;
   setSelectedMemberId: (id: string | null) => void;
   setIsChapterSelectorOpen: (val: boolean) => void;
@@ -88,7 +95,12 @@ interface AppContextType {
   rejectApplication: (id: string, reason: string) => void;
   requestApplicationInfo: (id: string, message: string) => void;
   addApplicationNote: (appId: string, noteText: string) => void;
+  verifyNewMemberReceipt: (applicationId: string, verified: boolean, note?: string) => void;
+  simulateUploadReceipt: (applicationId: string, receiptData: { receiptApp: 'Zelle' | 'Bank Wire' | 'Stripe' | 'PayPal' | 'Remita' | 'CashApp' | 'Paystack' | 'Other App'; receiptReference: string; receiptPayerName: string; receiptThumbnail?: string }) => void;
+  approveExistingMemberDues: (memberId: string, paymentMethod: string, reference?: string, note?: string) => void;
+  bulkApproveExistingDues: (memberIds: string[], paymentMethod: string) => void;
   createEvent: (eventData: Partial<EventItem>) => void;
+  createMeeting: (meetingData: Partial<MeetingItem>) => void;
   toggleCheckInAttendee: (eventId: string, attendeeId: string) => void;
   publishAnnouncement: (data: Partial<AnnouncementItem>) => void;
   uploadMinutes: (data: Partial<MeetingMinutesItem>) => void;
@@ -139,6 +151,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const saved = localStorage.getItem('th_drive_files');
     return saved ? JSON.parse(saved) : INITIAL_DRIVE_FILES;
   });
+  const [meetings, setMeetings] = useState<MeetingItem[]>(() => {
+    const saved = localStorage.getItem('th_meetings');
+    return saved ? JSON.parse(saved) : INITIAL_MEETINGS;
+  });
+  const [selectedMeetingId, setSelectedMeetingId] = useState<string | null>(null);
+  const [liveMeetingRoomId, setLiveMeetingRoomId] = useState<string | null>(null);
   const [elections] = useState<ElectionItem[]>(INITIAL_ELECTIONS);
   const [communities] = useState<CommunityItem[]>(INITIAL_COMMUNITIES);
   const [notifications, setNotifications] = useState<NotificationItem[]>(() => {
@@ -151,7 +169,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [userRole, setUserRole] = useState<Role>('Chapter Admin');
-  const [activeTab, setActiveTab] = useState<'home' | 'approvals' | 'events' | 'drive' | 'more'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'approvals' | 'events' | 'meet' | 'more' | 'drive'>('home');
   const [activeSubScreen, setActiveSubScreen] = useState<SubScreenType>(null);
   const [isMobileFrameEnabled, setIsMobileFrameEnabled] = useState<boolean>(true);
   const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null);
@@ -180,6 +198,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem('th_events', JSON.stringify(events));
   }, [events]);
+  useEffect(() => {
+    localStorage.setItem('th_meetings', JSON.stringify(meetings));
+  }, [meetings]);
   useEffect(() => {
     localStorage.setItem('th_activities', JSON.stringify(activities));
   }, [activities]);
@@ -349,6 +370,194 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addAuditLog('Event Created', `Created "${newEvt.title}"`, newEvt.id, 'Events');
   };
 
+  const createMeeting = (meetingData: Partial<MeetingItem>) => {
+    const newMeet: MeetingItem = {
+      id: `meet-${Date.now()}`,
+      title: meetingData.title || 'Chapter Meeting',
+      type: meetingData.type || 'Sub-Chapter Sync',
+      dateDisplay: meetingData.dateDisplay || 'Upcoming',
+      timeDisplay: meetingData.timeDisplay || 'TBD',
+      timestamp: new Date().toISOString(),
+      duration: meetingData.duration || '45 mins',
+      status: meetingData.status || 'upcoming',
+      platform: meetingData.platform || 'Built-in Meet',
+      meetingUrl: meetingData.meetingUrl || `https://meet.transparencyhub.org/room-${Date.now().toString().slice(-4)}`,
+      roomCode: meetingData.roomCode || `TH-${activeChapter.code}-${Date.now().toString().slice(-4)}`,
+      hostName: 'Mavis Okonjo (Admin)',
+      chapterId: activeChapterId,
+      chapterName: activeChapter.name,
+      subChapterName: meetingData.subChapterName,
+      targetAudience: meetingData.targetAudience || 'Chapter Members',
+      attendeesCount: 1,
+      maxAttendees: meetingData.maxAttendees || 100,
+      agenda: meetingData.agenda || ['1. Meeting opening and roll call', '2. Statutory discussion points'],
+      notes: meetingData.notes || ''
+    };
+
+    setMeetings(prev => [newMeet, ...prev]);
+
+    const newActivity: ActivityItem = {
+      id: `act-${Date.now()}`,
+      title: 'Mavis Okonjo',
+      description: `Scheduled meeting: "${newMeet.title}" for ${activeChapter.name}.`,
+      referenceText: `Room: #${newMeet.roomCode}`,
+      timeAgo: 'Just now',
+      timestamp: new Date().toISOString(),
+      authorName: 'Mavis Okonjo',
+      authorInitials: 'MO',
+      type: 'event'
+    };
+    setActivities(prev => [newActivity, ...prev]);
+    addAuditLog('Meeting Scheduled', `Created meeting "${newMeet.title}" (${newMeet.type})`, newMeet.id, 'Meetings');
+  };
+
+  const verifyNewMemberReceipt = (applicationId: string, verified: boolean, note?: string) => {
+    const target = applications.find(a => a.id === applicationId);
+    if (!target) return;
+
+    if (verified) {
+      setApplications(prev => prev.map(app => {
+        if (app.id === applicationId) {
+          return {
+            ...app,
+            status: 'approved',
+            paymentStatus: 'paid',
+            receiptVerified: true,
+            adminNotes: [
+              ...app.adminNotes,
+              { id: `n-${Date.now()}`, author: 'Mavis Okonjo', text: `3rd-party ${app.receiptApp || 'payment'} receipt verified. Candidate inducted. ${note || ''}`.trim(), timestamp: 'Just now' }
+            ]
+          };
+        }
+        return app;
+      }));
+
+      // Induct as registered member if not already registered
+      const alreadyMember = registeredMembers.some(m => m.email.toLowerCase() === target.email.toLowerCase());
+      if (!alreadyMember) {
+        const newMember: RegisteredMember = {
+          id: `MEM-${Math.floor(1000 + Math.random() * 9000)}`,
+          fullName: target.fullName,
+          initials: target.initials,
+          avatarUrl: target.avatarUrl,
+          email: target.email,
+          phone: target.phone,
+          membershipType: target.membershipType,
+          chapterId: target.chapterId,
+          subChapterName: target.subChapterName,
+          status: 'active',
+          duesStatus: 'up_to_date',
+          duesAmount: target.membershipFee,
+          duesCycle: '2026/2027 Annual Dues',
+          duesApprovedByAdmin: true,
+          duesApprovalDate: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+          duesPaymentMethod: `${target.receiptApp || '3rd-Party App'} Receipt Verified`,
+          duesReference: target.receiptReference || target.paymentReference,
+          joinedDate: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+          graduationYear: target.graduationYear
+        };
+        setRegisteredMembers(prev => [newMember, ...prev]);
+      }
+
+      addAuditLog('New Member Receipt Verified', `Verified ${target.receiptApp || '3rd-party'} receipt for ${target.fullName}. Inducted as active member.`, target.id, 'Verification');
+    } else {
+      setApplications(prev => prev.map(app => {
+        if (app.id === applicationId) {
+          return {
+            ...app,
+            receiptVerified: false,
+            status: 'info_requested',
+            adminNotes: [
+              ...app.adminNotes,
+              { id: `n-${Date.now()}`, author: 'Mavis Okonjo', text: `Receipt issue: ${note || 'Receipt verification unsuccessful. Please re-upload legible 3rd-party receipt.'}`, timestamp: 'Just now' }
+            ]
+          };
+        }
+        return app;
+      }));
+
+      addAuditLog('Receipt Clarification Requested', `Requested receipt update from ${target.fullName}: ${note || 'Illegible receipt'}`, target.id, 'Verification');
+    }
+  };
+
+  const simulateUploadReceipt = (applicationId: string, receiptData: { receiptApp: 'Zelle' | 'Bank Wire' | 'Stripe' | 'PayPal' | 'Remita' | 'CashApp' | 'Paystack' | 'Other App'; receiptReference: string; receiptPayerName: string; receiptThumbnail?: string }) => {
+    setApplications(prev => prev.map(app => {
+      if (app.id === applicationId) {
+        return {
+          ...app,
+          status: 'pending',
+          paymentStatus: 'paid',
+          amountPaid: app.membershipFee,
+          outstandingBalance: 0,
+          receiptApp: receiptData.receiptApp,
+          receiptReference: receiptData.receiptReference,
+          receiptDate: 'Just now',
+          receiptPayerName: receiptData.receiptPayerName,
+          receiptThumbnail: receiptData.receiptThumbnail || 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=400&q=80',
+          receiptVerified: false,
+          isNewMember: true
+        };
+      }
+      return app;
+    }));
+
+    addAuditLog('Receipt Uploaded', `New member candidate uploaded ${receiptData.receiptApp} payment receipt (${receiptData.receiptReference})`, applicationId, 'Verification');
+  };
+
+  const approveExistingMemberDues = (memberId: string, paymentMethod: string, reference?: string, note?: string) => {
+    const target = registeredMembers.find(m => m.id === memberId);
+    if (!target) return;
+
+    const ref = reference || `TREAS-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    setRegisteredMembers(prev => prev.map(m => {
+      if (m.id === memberId) {
+        return {
+          ...m,
+          duesStatus: 'up_to_date',
+          duesApprovedByAdmin: true,
+          duesApprovalDate: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+          duesPaymentMethod: paymentMethod,
+          duesReference: ref
+        };
+      }
+      return m;
+    }));
+
+    const newActivity: ActivityItem = {
+      id: `act-${Date.now()}`,
+      title: 'Mavis Okonjo',
+      description: `Approved annual dues for existing member ${target.fullName} via ${paymentMethod} (No receipt required).`,
+      referenceText: `Dues Ref: #${ref}`,
+      timeAgo: 'Just now',
+      timestamp: new Date().toISOString(),
+      authorName: 'Mavis Okonjo',
+      authorInitials: 'MO',
+      type: 'disbursement'
+    };
+    setActivities(prev => [newActivity, ...prev]);
+
+    addAuditLog('Existing Dues Approved', `Direct clearance of annual dues for ${target.fullName} via ${paymentMethod}. (No receipt required)`, target.id, 'Dues');
+  };
+
+  const bulkApproveExistingDues = (memberIds: string[], paymentMethod: string) => {
+    setRegisteredMembers(prev => prev.map(m => {
+      if (memberIds.includes(m.id)) {
+        return {
+          ...m,
+          duesStatus: 'up_to_date',
+          duesApprovedByAdmin: true,
+          duesApprovalDate: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+          duesPaymentMethod: paymentMethod,
+          duesReference: `TREAS-BULK-${Date.now().toString().slice(-4)}`
+        };
+      }
+      return m;
+    }));
+
+    addAuditLog('Bulk Dues Clearance', `Admin approved dues for ${memberIds.length} existing members via ${paymentMethod} (No receipt required).`, 'BULK', 'Dues');
+  };
+
   const toggleCheckInAttendee = (eventId: string, attendeeId: string) => {
     setEvents(prev => prev.map(evt => {
       if (evt.id === eventId) {
@@ -475,6 +684,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         subscriptions,
         invoices,
         events,
+        meetings,
         activities,
         announcements,
         minutes,
@@ -490,6 +700,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isMobileFrameEnabled,
         selectedApplicationId,
         selectedEventId,
+        selectedMeetingId,
+        liveMeetingRoomId,
         selectedFileId,
         selectedMemberId,
         isChapterSelectorOpen,
@@ -505,6 +717,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsMobileFrameEnabled,
         setSelectedApplicationId,
         setSelectedEventId,
+        setSelectedMeetingId,
+        setLiveMeetingRoomId,
         setSelectedFileId,
         setSelectedMemberId,
         setIsChapterSelectorOpen,
@@ -517,7 +731,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         rejectApplication,
         requestApplicationInfo,
         addApplicationNote,
+        verifyNewMemberReceipt,
+        simulateUploadReceipt,
+        approveExistingMemberDues,
+        bulkApproveExistingDues,
         createEvent,
+        createMeeting,
         toggleCheckInAttendee,
         publishAnnouncement,
         uploadMinutes,
